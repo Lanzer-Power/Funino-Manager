@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funino Turnierplaner</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2e7d32" />
+  <link rel="icon" href="icon-192.png" />
+</head>
+<body>
+  <header>
+    <h1>⚽ Funino Turnierplaner</h1>
+    <p>Erstellt von Marco Lanzwe</p>
+  </header>
+
+  <main>
+    <!-- Hauptbedienelemente und Spielfeldeingabe -->
+    <section id="konfiguration">
+      <h2>Turnierdaten</h2>
+      <input id="turniername" placeholder="Turniername" />
+      <input id="datum" placeholder="Datum" />
+      <!-- weitere Eingaben ... -->
+    </section>
+
+    <section id="teams">
+      <h2>Teams</h2>
+      <textarea id="teams-eingabe" placeholder="z. B. FC Köln-2, Fortuna-1"></textarea>
+    </section>
+
+    <button id="spielplan-btn">📋 Spielplan erstellen</button>
+
+    <section id="spielplan">
+      <!-- Spielplan-Ausgabe -->
+    </section>
+  </main>
+
+  <footer>
+    <a href="anleitung.html">🛈 Benutzeranleitung</a>
+    <p>&copy; 2025 Marco Lanzwe</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => {
+        console.log('✅ Service Worker registriert');
+      });
+    }
+  </script>
+</body>
+</html>
