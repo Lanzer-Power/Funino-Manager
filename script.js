@@ -14,10 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const pdfBereich = document.getElementById('pdf-bereich');
   const torListe = document.getElementById('tor-liste');
   const startzeitHinweis = document.getElementById('startzeit-hinweis');
+  const einzelplaeneCheckbox = document.getElementById('einzelplaene');
+  const einzelplaenePDF = document.getElementById('einzelplaene-pdf');
 
   const torTypen = ['Minitore', 'Jugendtore'];
 
-  // Logo-Vorschau
   logoInput.addEventListener('change', () => {
     const file = logoInput.files[0];
     if (file) {
@@ -30,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Tor-Typ-Auswahl dynamisch erzeugen
   function aktualisiereTorTypen(felder) {
     torListe.innerHTML = '';
     for (let i = 1; i <= felder; i++) {
@@ -142,6 +142,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('zeitplan-pdf').innerHTML = ausgabe.innerHTML;
   }
+  function zeigeEinzelplaene(teams, zeitplan) {
+    einzelplaenePDF.innerHTML = '';
+
+    teams.forEach(team => {
+      const eigeneSpiele = zeitplan.filter(spiel =>
+        spiel.team1 === team || spiel.team2 === team
+      );
+
+      if (eigeneSpiele.length === 0) return;
+
+      const block = document.createElement('div');
+      block.innerHTML = `<h3>📄 Spielplan für ${team}</h3>`;
+
+      const tabelle = document.createElement('table');
+      tabelle.innerHTML = `
+        <thead>
+          <tr>
+            <th>Gegner</th>
+            <th>Feld</th>
+            <th>Start</th>
+            <th>Ende</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = tabelle.querySelector('tbody');
+      eigeneSpiele.forEach(spiel => {
+        const gegner = spiel.team1 === team ? spiel.team2 : spiel.team1;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${gegner}</td>
+          <td>${spiel.feld}</td>
+          <td>${spiel.beginn}</td>
+          <td>${spiel.ende}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      block.appendChild(tabelle);
+      einzelplaenePDF.appendChild(block);
+    });
+  }
 
   function fuellePDFKopf() {
     document.getElementById('kopf-turniername').textContent = document.getElementById('turniername').value || '';
@@ -167,6 +210,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const zeitplan = berechneZeitplan(spiele, felder, spielzeit, pause);
     zeigeSpielplan(spiele, zeitplan);
     fuellePDFKopf();
+
+    if (einzelplaeneCheckbox.checked) {
+      zeigeEinzelplaene(teams, zeitplan);
+    } else {
+      einzelplaenePDF.innerHTML = '';
+    }
+
     pdfBereich.style.display = 'block';
   });
 
@@ -190,8 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
     logoPDF.src = '';
     ausgabe.innerHTML = '';
     document.getElementById('zeitplan-pdf').innerHTML = '';
+    einzelplaenePDF.innerHTML = '';
     pdfBereich.style.display = 'none';
     startzeitHinweis.textContent = '';
     aktualisiereTorTypen(3);
+    einzelplaeneCheckbox.checked = false;
   });
 });
