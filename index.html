@@ -27,19 +27,25 @@
       <input type="file" id="logo" accept="image/*" />
       <div id="logo-vorschau"></div>
     </section>
+
     <section id="einstellungen">
       <h2>⚙️ Turniereinstellungen</h2>
       <label for="teams">Teams (durch Komma getrennt):</label>
       <textarea id="teams" placeholder="z. B. FC Köln-1, Fortuna-2, Borussia-3"></textarea>
 
       <label for="felder">Anzahl der Spielfelder:</label>
-      <input type="number" id="felder" min="1" value="2" />
+      <input type="number" id="felder" min="1" value="3" />
 
       <label for="spielzeit">Spielzeit (Minuten):</label>
       <input type="number" id="spielzeit" min="1" value="8" />
 
       <label for="pause">Pausenzeit zwischen Spielen (Minuten):</label>
       <input type="number" id="pause" min="0" value="2" />
+
+      <div id="tor-auswahl">
+        <h3>🥅 Tore pro Feld</h3>
+        <div id="tor-liste"></div>
+      </div>
     </section>
 
     <section id="aktionen">
@@ -51,6 +57,7 @@
       <h2>📅 Spielplan</h2>
       <div id="spielplan"></div>
     </section>
+
     <section id="pdf-bereich" style="display: none;">
       <div id="turnierkopf">
         <img id="logo-pdf" src="" alt="Turnierlogo" style="max-height: 80px;" />
@@ -68,9 +75,10 @@
   </main>
 
   <footer>
-    <p>&copy; 2025 Marco Lanzer</p>
+    <p>&copy; 2025 Marco Lanzwe</p>
     <a href="anleitung.html">🛈 Anleitung</a>
   </footer>
+
   <script src="script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
