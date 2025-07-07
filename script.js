@@ -13,10 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const pdfBereich = document.getElementById('pdf-bereich');
   const torListe = document.getElementById('tor-liste');
 
-  const torOptionen = ['Tor A', 'Tor B', 'Tor C', 'Tor D', 'Tor E', 'Tor F', 'Tor G', 'Tor H'];
-  let torZuordnung = {}; // z. B. {1: ['Tor A', 'Tor B'], 2: ['Tor C', 'Tor D']}
+  const torTypen = ['Minitore', 'Jugendtore'];
 
-  // Logo-Vorschau anzeigen
+  // Logo-Vorschau
   logoInput.addEventListener('change', () => {
     const file = logoInput.files[0];
     if (file) {
@@ -29,33 +28,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Tor-Auswahl dynamisch erzeugen
-  function aktualisiereTorAuswahl(felder) {
+  // Tor-Typ-Auswahl dynamisch erzeugen
+  function aktualisiereTorTypen(felder) {
     torListe.innerHTML = '';
-    torZuordnung = {};
-
     for (let i = 1; i <= felder; i++) {
       const feldDiv = document.createElement('div');
       feldDiv.innerHTML = `
-        <label>Feld ${i} – Tor 1:</label>
-        <select id="tor1-feld${i}">${torOptionen.map(t => `<option>${t}</option>`).join('')}</select>
-        <label>Tor 2:</label>
-        <select id="tor2-feld${i}">${torOptionen.map(t => `<option>${t}</option>`).join('')}</select>
+        <label for="tor-feld${i}">Feld ${i}:</label>
+        <select id="tor-feld${i}">
+          ${torTypen.map(t => `<option>${t}</option>`).join('')}
+        </select>
       `;
       torListe.appendChild(feldDiv);
     }
   }
 
-  // Bei Änderung der Feldanzahl Dropdowns neu erzeugen
+  // Bei Änderung der Feldanzahl neu erzeugen
   felderInput.addEventListener('input', () => {
     const felder = parseInt(felderInput.value);
     if (!isNaN(felder) && felder > 0) {
-      aktualisiereTorAuswahl(felder);
+      aktualisiereTorTypen(felder);
     }
   });
 
   // Initial erzeugen
-  aktualisiereTorAuswahl(parseInt(felderInput.value));
+  aktualisiereTorTypen(parseInt(felderInput.value));
   function generiereSpiele(teams) {
     const spiele = [];
     for (let i = 0; i < teams.length; i++) {
@@ -85,15 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const ende = new Date(startZeit.getTime() + spielzeit * 60000);
 
       const feldNummer = feldIndex + 1;
-
-      // Torzuweisung auslesen
-      const tor1 = document.getElementById(`tor1-feld${feldNummer}`)?.value || '';
-      const tor2 = document.getElementById(`tor2-feld${feldNummer}`)?.value || '';
-      const tore = tor1 && tor2 ? ` (${tor1} + ${tor2})` : '';
+      const torTyp = document.getElementById(`tor-feld${feldNummer}`)?.value || '';
+      const feldBezeichnung = `Feld ${feldNummer}${torTyp ? ` (${torTyp})` : ''}`;
 
       zeitplan.push({
         ...spiel,
-        feld: `Feld ${feldNummer}${tore}`,
+        feld: feldBezeichnung,
         beginn: beginn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         ende: ende.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
@@ -107,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return zeitplan;
   }
+
   function zeigeSpielplan(spiele, zeitplan) {
     ausgabe.innerHTML = '';
 
@@ -140,10 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     ausgabe.appendChild(tabelle);
-
-    // PDF-Zeitplan vorbereiten
-    const pdfZeitplan = document.getElementById('zeitplan-pdf');
-    pdfZeitplan.innerHTML = ausgabe.innerHTML;
+    document.getElementById('zeitplan-pdf').innerHTML = ausgabe.innerHTML;
   }
 
   function fuellePDFKopf() {
@@ -155,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('kopf-email').textContent = `E-Mail: ${document.getElementById('email').value || ''}`;
   }
 
-  // Spielplan erstellen
   erstellenBtn.addEventListener('click', () => {
     const teams = teamsInput.value.split(',').map(t => t.trim()).filter(t => t);
     const felder = parseInt(felderInput.value);
@@ -174,12 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfBereich.style.display = 'block';
   });
 
-  // PDF-Druck
   pdfBtn.addEventListener('click', () => {
     window.print();
   });
 
-  // Reset-Funktion
   resetBtn.addEventListener('click', () => {
     document.getElementById('turniername').value = '';
     document.getElementById('datum').value = '';
@@ -196,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ausgabe.innerHTML = '';
     document.getElementById('zeitplan-pdf').innerHTML = '';
     pdfBereich.style.display = 'none';
-    aktualisiereTorAuswahl(3);
+    aktualisiereTorTypen(3);
   });
 
 }); // Ende DOMContentLoaded
