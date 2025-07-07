@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const torTypen = ['Minitore', 'Jugendtore'];
 
-  // Logo-Vorschau
+  // Logo-Vorschau anzeigen
   logoInput.addEventListener('change', () => {
     const file = logoInput.files[0];
     if (file) {
@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial erzeugen
   aktualisiereTorTypen(parseInt(felderInput.value));
+
   function generiereSpiele(teams) {
     const spiele = [];
     for (let i = 0; i < teams.length; i++) {
@@ -188,4 +189,4 @@ document.addEventListener('DOMContentLoaded', () => {
     aktualisiereTorTypen(3);
   });
 
-}); // Ende DOMContentLoaded
+});
