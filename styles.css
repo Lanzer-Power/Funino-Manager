@@ -4,13 +4,13 @@ body {
   padding: 0;
   background-color: #f0f8f5;
   color: #222;
+  text-align: left;
 }
 
 header, footer {
   background-color: #2e7d32;
   color: white;
   padding: 1rem;
-  text-align: center;
 }
 
 main {
@@ -76,13 +76,16 @@ th {
 }
 
 #turnierkopf {
-  text-align: center;
   margin-bottom: 1rem;
 }
 
 footer a {
   color: #a5f0c2;
   text-decoration: underline;
+}
+
+h1, h2, p, label {
+  text-align: left;
 }
 
 @media print {
@@ -98,7 +101,4 @@ footer a {
     background: white;
     color: black;
   }
-}
-h1, h2 {
-  text-align: left;
 }
