@@ -3,100 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Funino Turnierplaner</title>
+  <title>Funino Spielfest Planer</title>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#2e7d32" />
-  <link rel="icon" href="icon-192.png" />
 </head>
 <body>
-  <header>
-    <h1>⚽ Funino Turnierplaner</h1>
-    <p>Erstelle deinen Spielplan mit Zeitberechnung & PDF-Ausgabe</p>
-  </header>
+  <h1>Funino Spielfest Planer</h1>
+  <h2>⚽ Turnierübersicht ⚽</h2>
 
-  <main>
-    <section id="turnierdaten">
-      <h2>📋 Turnierinformationen</h2>
-      <input type="text" id="turniername" placeholder="Turniername" />
-      <input type="text" id="datum" placeholder="Datum (z. B. 07.07.2025)" />
+  <label>🏷️ Turniername:
+    <input type="text" id="turniername" placeholder="z. B. U9 Mini-Cup 2025" />
+  </label>
 
-      <label for="startzeit">Spielbeginn (HH:MM):</label>
-      <input type="time" id="startzeit" value="10:00" />
+  <label>📷 Vereinslogo (optional):
+    <input type="file" id="logoUpload" accept="image/*" />
+  </label>
 
-      <input type="text" id="ort" placeholder="Ort" />
-      <input type="text" id="ansprechpartner" placeholder="Ansprechpartner" />
-      <input type="email" id="email" placeholder="E-Mail-Adresse" />
-      <label for="logo">📷 Logo hochladen:</label>
-      <input type="file" id="logo" accept="image/*" />
-      <div id="logo-vorschau"></div>
-    </section>
+  <div id="logoVorschau" style="margin-top:10px;"></div>
+  <hr />
 
-    <section id="einstellungen">
-      <h2>⚙️ Turniereinstellungen</h2>
-      <label for="teams">Teams (durch Komma getrennt):</label>
-      <textarea id="teams" placeholder="z. B. FC Köln-1, Fortuna-2, Borussia-3"></textarea>
+  <form id="spielformular">
+    <label>📅 Datum:
+      <input type="date" id="datum" required />
+    </label>
 
-      <label for="felder">Anzahl der Spielfelder:</label>
-      <input type="number" id="felder" min="1" value="3" />
+    <label>⏰ Startzeit:
+      <input type="time" id="startzeit" required />
+    </label>
 
-      <label for="spielzeit">Spielzeit (Minuten):</label>
-      <input type="number" id="spielzeit" min="1" value="8" />
+    <label>⏱️ Spieldauer (Minuten):
+      <input type="number" id="dauer" value="8" min="1" required />
+    </label>
 
-      <label for="pause">Pausenzeit zwischen Spielen (Minuten):</label>
-      <input type="number" id="pause" min="0" value="2" />
+    <label>☕ Pausenlänge (Minuten):
+      <input type="number" id="pause" value="2" min="0" required />
+    </label>
 
-      <div id="tor-auswahl">
-        <h3>🥅 Tor-Typ pro Feld wählen</h3>
-        <div id="tor-liste"></div>
-      </div>
-    </section>
+    <label>🔁 Spielrunden:
+      <select id="runden">
+        <option value="auto">Automatisch (jeder gegen jeden)</option>
+        ${Array.from({ length: 15 }, (_, i) => `<option value="${i + 3}">${i + 3}</option>`).join("")}
+      </select>
+    </label>
 
-    <section id="aktionen">
-      <button id="spielplan-erstellen">📋 Spielplan erstellen</button>
-      <button id="reset">🔄 Zurücksetzen</button>
+    <label>🏟️ Anzahl Spielfelder (max. 8):
+      <input type="number" id="felder" value="3" min="1" max="8" required />
+    </label>
 
-      <label style="display: block; margin-top: 1rem;">
-        <input type="checkbox" id="einzelplaene" />
-        Für jedes Team einen Einzel-Spielplan erzeugen
-      </label>
-    </section>
+    <div id="torTypen"></div>
 
-    <section id="ausgabe">
-      <h2>📅 Spielplan</h2>
-      <p id="startzeit-hinweis"></p>
-      <div id="spielplan"></div>
-    </section>
+    <label>👥 Teams (z. B. SC Köln 2000-2, Fc Köln-1):
+      <textarea id="teams" rows="3" required>SC Köln 2000-2, Fortuna-1, Fc Köln-1</textarea>
+    </label>
 
-    <section id="pdf-bereich" style="display: none;">
-      <div id="turnierkopf">
-        <img id="logo-pdf" src="" alt="Turnierlogo" style="max-height: 80px;" />
-        <h2 id="kopf-turniername"></h2>
-        <p id="kopf-datum-ort"></p>
-        <p id="kopf-ansprechpartner"></p>
-        <p id="kopf-email"></p>
-      </div>
-      <div id="zeitplan-pdf"></div>
-      <div id="einzelplaene-pdf"></div>
-    </section>
+    <label>
+      <input type="checkbox" id="einzelplaene" />
+      🧾 Für jedes Team einen Einzel-Spielplan erzeugen
+    </label>
 
-    <section id="druck">
-      <button id="pdf-drucken">🖨️ Spielplan als PDF drucken</button>
-    </section>
-  </main>
+    <button type="submit">📋 Spielplan erstellen</button>
+    <button type="button" onclick="exportPDF()">📄 Als PDF speichern</button>
+  </form>
 
-  <footer>
-    <p>&copy; 2025 Marco Lanzwe</p>
-    <a href="anleitung.html">🛈 Anleitung</a>
-  </footer>
+  <hr />
+
+  <div id="kopfbereich" style="text-align:center; margin-bottom:20px;"></div>
+  <div id="spielplan"></div>
+  <div id="statistik"></div>
 
   <script src="script.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(() => {
-        console.log('✅ Service Worker registriert');
-      });
-    }
-  </script>
 </body>
 </html>
