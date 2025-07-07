@@ -1,249 +1,303 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const teamsInput = document.getElementById('teams');
-  const felderInput = document.getElementById('felder');
-  const spielzeitInput = document.getElementById('spielzeit');
-  const pauseInput = document.getElementById('pause');
-  const startzeitInput = document.getElementById('startzeit');
-  const logoInput = document.getElementById('logo');
-  const logoVorschau = document.getElementById('logo-vorschau');
-  const logoPDF = document.getElementById('logo-pdf');
-  const erstellenBtn = document.getElementById('spielplan-erstellen');
-  const resetBtn = document.getElementById('reset');
-  const pdfBtn = document.getElementById('pdf-drucken');
-  const ausgabe = document.getElementById('spielplan');
-  const pdfBereich = document.getElementById('pdf-bereich');
-  const torListe = document.getElementById('tor-liste');
-  const startzeitHinweis = document.getElementById('startzeit-hinweis');
-  const einzelplaeneCheckbox = document.getElementById('einzelplaene');
-  const einzelplaenePDF = document.getElementById('einzelplaene-pdf');
+const form = document.getElementById("spielformular");
+const torTypenDiv = document.getElementById("torTypen");
 
-  const torTypen = ['Minitore', 'Jugendtore'];
-
-  logoInput.addEventListener('change', () => {
-    const file = logoInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        logoVorschau.innerHTML = `<img src="${e.target.result}" alt="Logo" style="max-height: 80px;" />`;
-        logoPDF.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+function parseTeams(input) {
+  const teams = [];
+  input.split(",").forEach(entry => {
+    const [name, count] = entry.trim().split("-");
+    for (let i = 1; i <= parseInt(count); i++) {
+      teams.push(`${name.trim()} ${i}`);
     }
   });
+  return teams;
+}
 
-  function aktualisiereTorTypen(felder) {
-    torListe.innerHTML = '';
-    for (let i = 1; i <= felder; i++) {
-      const feldDiv = document.createElement('div');
-      feldDiv.innerHTML = `
-        <label for="tor-feld${i}">Feld ${i}:</label>
-        <select id="tor-feld${i}">
-          ${torTypen.map(t => `<option>${t}</option>`).join('')}
-        </select>
-      `;
-      torListe.appendChild(feldDiv);
+function generatePlan(teams, dauer, pause, start, rundenwahl) {
+  let list = [...teams];
+  if (list.length % 2 === 1) list.push("Pause");
+  const totalRounds = rundenwahl === "auto" ? list.length - 1 : parseInt(rundenwahl);
+  const rounds = [], times = [];
+
+  let [hour, min] = start.split(":").map(Number);
+  for (let i = 0; i < totalRounds; i++) {
+    const round = [];
+    for (let j = 0; j < list.length / 2; j++) {
+      const t1 = list[j];
+      const t2 = list[list.length - 1 - j];
+      if (t1 !== "Pause" && t2 !== "Pause") round.push([t1, t2]);
     }
+    rounds.push(round);
+
+    const startStr = `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+    min += dauer;
+    const endStr = `${String(hour + Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+    times.push({ start: startStr, end: endStr });
+
+    min += pause;
+    hour += Math.floor(min / 60);
+    min %= 60;
+
+    const fixed = list.shift();
+    list.splice(list.length - 1, 0, fixed);
   }
+  return { rounds, times };
+}
 
-  felderInput.addEventListener('input', () => {
-    const felder = parseInt(felderInput.value);
-    if (!isNaN(felder) && felder > 0) {
-      aktualisiereTorTypen(felder);
-    }
-  });
+function verteileSpieleAufFelder(rounds, feldTypen) {
+  const teamStats = {};
+  const belegung = [];
 
-  aktualisiereTorTypen(parseInt(felderInput.value));
+  rounds.forEach(runde => {
+    const belegteFelder = new Set();
+    const zuweisungen = [];
 
-  function generiereSpiele(teams) {
-    const spiele = [];
-    for (let i = 0; i < teams.length; i++) {
-      for (let j = i + 1; j < teams.length; j++) {
-        spiele.push({ team1: teams[i], team2: teams[j] });
-      }
-    }
-
-    for (let i = spiele.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [spiele[i], spiele[j]] = [spiele[j], spiele[i]];
-    }
-
-    return spiele;
-  }
-
-  function berechneZeitplan(spiele, felder, spielzeit, pause) {
-    const zeitplan = [];
-    const [stunden, minuten] = startzeitInput.value.split(':').map(Number);
-    let startZeit = new Date();
-    startZeit.setHours(stunden, minuten, 0, 0);
-
-    let feldIndex = 0;
-    for (let i = 0; i < spiele.length; i++) {
-      const spiel = spiele[i];
-      const beginn = new Date(startZeit);
-      const ende = new Date(startZeit.getTime() + spielzeit * 60000);
-
-      const feldNummer = feldIndex + 1;
-      const torTyp = document.getElementById(`tor-feld${feldNummer}`)?.value || '';
-      const feldBezeichnung = `Feld ${feldNummer}${torTyp ? ` (${torTyp})` : ''}`;
-
-      zeitplan.push({
-        ...spiel,
-        feld: feldBezeichnung,
-        beginn: beginn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        ende: ende.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    runde.forEach(pair => {
+      const [t1, t2] = pair;
+      [t1, t2].forEach(t => {
+        if (!teamStats[t]) teamStats[t] = { Minitore: 0, Jugendtore: 0 };
       });
 
-      feldIndex++;
-      if (feldIndex >= felder) {
-        feldIndex = 0;
-        startZeit = new Date(startZeit.getTime() + (spielzeit + pause) * 60000);
+      let bestFeld = null;
+      let bestSum = Infinity;
+
+      feldTypen.forEach((feld, index) => {
+        if (belegteFelder.has(index)) return;
+        const sum = teamStats[t1][feld.typ] + teamStats[t2][feld.typ];
+        if (sum < bestSum) {
+          bestFeld = index;
+          bestSum = sum;
+        }
+      });
+
+      if (bestFeld !== null) {
+        belegteFelder.add(bestFeld);
+        teamStats[t1][feldTypen[bestFeld].typ]++;
+        teamStats[t2][feldTypen[bestFeld].typ]++;
+        zuweisungen.push({
+          team1: t1,
+          team2: t2,
+          feld: bestFeld + 1,
+          torTyp: feldTypen[bestFeld].typ
+        });
       }
-    }
+    });
 
-    return zeitplan;
-  }
+    belegung.push(zuweisungen);
+  });
 
-  function zeigeSpielplan(spiele, zeitplan) {
-    ausgabe.innerHTML = '';
+  return belegung;
+}
 
-    const tabelle = document.createElement('table');
-    tabelle.innerHTML = `
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Team 1</th>
-          <th>Team 2</th>
-          <th>Feld</th>
-          <th>Start</th>
-          <th>Ende</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
+function generateTorTypInputs() {
+  const count = parseInt(document.getElementById("felder").value);
+  torTypenDiv.innerHTML = "<strong>Tor-Typ pro Spielfeld:</strong>";
+  for (let i = 0; i < count; i++) {
+    const label = document.createElement("label");
+    label.innerText = `Feld ${i + 1}: `;
+    const select = document.createElement("select");
+    select.name = `torTyp${i}`;
+    select.className = "tor-select";
+    select.innerHTML = `
+      <option value="Minitore">Minitore</option>
+      <option value="Jugendtore">Jugendtore</option>
     `;
-
-    const tbody = tabelle.querySelector('tbody');
-    zeitplan.forEach((spiel, i) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${i + 1}</td>
-        <td>${spiel.team1}</td>
-        <td>${spiel.team2}</td>
-        <td>${spiel.feld}</td>
-        <td>${spiel.beginn}</td>
-        <td>${spiel.ende}</td>
-      `;
-      tbody.appendChild(row);
-    });
-
-    ausgabe.appendChild(tabelle);
-
-    const startzeitText = zeitplan.length > 0 ? zeitplan[0].beginn : '–';
-    startzeitHinweis.textContent = `Spielbeginn: ${startzeitText} Uhr`;
-
-    document.getElementById('zeitplan-pdf').innerHTML = ausgabe.innerHTML;
+    label.appendChild(select);
+    torTypenDiv.appendChild(label);
   }
-  function zeigeEinzelplaene(teams, zeitplan) {
-    einzelplaenePDF.innerHTML = '';
+}
 
-    teams.forEach(team => {
-      const eigeneSpiele = zeitplan.filter(spiel =>
-        spiel.team1 === team || spiel.team2 === team
-      );
+document.getElementById("felder").addEventListener("change", generateTorTypInputs);
+generateTorTypInputs();
+// 📋 Spielplan erstellen
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
 
-      if (eigeneSpiele.length === 0) return;
+  const dauer = parseInt(document.getElementById("dauer").value);
+  const pause = parseInt(document.getElementById("pause").value);
+  const start = document.getElementById("startzeit").value;
+  const rundenwahl = document.getElementById("runden").value;
+  const felder = parseInt(document.getElementById("felder").value);
+  const teams = parseTeams(document.getElementById("teams").value);
+  const torTypen = Array.from(document.querySelectorAll(".tor-select")).map(sel => sel.value);
 
-      const block = document.createElement('div');
-      block.innerHTML = `<h3>📄 Spielplan für ${team}</h3>`;
+  if (teams.length < 3) {
+    alert("Mindestens 3 Teams erforderlich");
+    return;
+  }
 
-      const tabelle = document.createElement('table');
-      tabelle.innerHTML = `
-        <thead>
-          <tr>
-            <th>Gegner</th>
-            <th>Feld</th>
-            <th>Start</th>
-            <th>Ende</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
+  const feldTypen = torTypen.map((typ, i) => ({ feld: i + 1, typ }));
+  const { rounds, times } = generatePlan(teams, dauer, pause, start, rundenwahl);
+  const belegung = verteileSpieleAufFelder(rounds, feldTypen);
+
+  // 🧾 Spielplan anzeigen
+  const out = document.getElementById("spielplan");
+  out.innerHTML = "<h2>📋 Spielplan</h2>";
+
+  const table = document.createElement("table");
+  table.innerHTML = "<tr><th>Runde</th><th>Start</th><th>Ende</th><th>Spielpaarung</th><th>Feld</th></tr>";
+
+  belegung.forEach((runde, i) => {
+    runde.forEach(spiel => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${times[i].start}</td>
+        <td>${times[i].end}</td>
+        <td>${spiel.team1} vs ${spiel.team2}</td>
+        <td>Feld ${spiel.feld} (${spiel.torTyp})</td>
       `;
+      if ((i + 1) % 2 === 0) {
+        tr.style.backgroundColor = "#f9f9f9";
+      }
+      table.appendChild(tr);
+    });
+  });
 
-      const tbody = tabelle.querySelector('tbody');
-      eigeneSpiele.forEach(spiel => {
-        const gegner = spiel.team1 === team ? spiel.team2 : spiel.team1;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${gegner}</td>
-          <td>${spiel.feld}</td>
-          <td>${spiel.beginn}</td>
-          <td>${spiel.ende}</td>
-        `;
-        tbody.appendChild(row);
+  out.appendChild(table);
+
+  // 🧢 Turnierkopf anzeigen
+  const kopf = document.getElementById("kopfbereich");
+  const turniername = document.getElementById("turniername").value;
+  const logoFile = document.getElementById("logoUpload").files[0];
+  kopf.innerHTML = "";
+  if (turniername) {
+    const title = document.createElement("h2");
+    title.textContent = turniername;
+    kopf.appendChild(title);
+  }
+
+  if (logoFile) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.style.maxHeight = "80px";
+      kopf.appendChild(img);
+    };
+    reader.readAsDataURL(logoFile);
+  }
+
+  generiereStatistik(belegung);
+
+  // 🔁 Merken für exportPDF
+  window.currentPlan = { belegung, times, teams, turniername };
+});
+
+// 📷 Logo-Vorschau im Formular
+document.getElementById("logoUpload").addEventListener("change", function () {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.style.maxHeight = "80px";
+      img.style.marginTop = "10px";
+      const container = document.getElementById("logoVorschau");
+      container.innerHTML = "";
+      container.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// 📊 Teamstatistik anzeigen
+function generiereStatistik(belegung) {
+  const statistik = {};
+  belegung.flat().forEach(({ team1, team2, torTyp }) => {
+    [team1, team2].forEach(team => {
+      if (!statistik[team]) statistik[team] = { Minitore: 0, Jugendtore: 0 };
+      statistik[team][torTyp]++;
+    });
+  });
+
+  const statDiv = document.getElementById("statistik");
+  statDiv.innerHTML = "<h2>📊 Teamstatistik (Spiele pro Tor-Typ)</h2>";
+  const table = document.createElement("table");
+  table.innerHTML = "<tr><th>Mannschaft</th><th>Minitore</th><th>Jugendtore</th><th>Gesamt</th></tr>";
+
+  Object.entries(statistik).sort().forEach(([team, werte]) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${team}</td>
+      <td>${werte.Minitore}</td>
+      <td>${werte.Jugendtore}</td>
+      <td>${werte.Minitore + werte.Jugendtore}</td>
+    `;
+    table.appendChild(tr);
+  });
+
+  statDiv.appendChild(table);
+}
+
+// 📄 PDF-/Druck-Export mit Einzelplänen
+function exportPDF() {
+  if (!window.currentPlan) {
+    alert("Bitte erst den Spielplan erstellen.");
+    return;
+  }
+
+  const { belegung, times, teams, turniername } = window.currentPlan;
+  const includeEinzelplaene = document.getElementById("einzelplaene").checked;
+  const kopfbereich = document.getElementById("kopfbereich").innerHTML;
+  const spielplanHTML = document.getElementById("spielplan").innerHTML;
+  const statistikHTML = document.getElementById("statistik").innerHTML;
+
+  let allPages = `
+    <div style="text-align:center;">${kopfbereich}</div>
+    ${spielplanHTML}
+    ${statistikHTML}
+  `;
+
+  if (includeEinzelplaene) {
+    teams.sort().forEach(team => {
+      const entries = [];
+      belegung.forEach((runde, rundeIndex) => {
+        runde.forEach(spiel => {
+          if (spiel.team1 === team || spiel.team2 === team) {
+            entries.push({
+              runde: rundeIndex + 1,
+              start: times[rundeIndex].start,
+              ende: times[rundeIndex].end,
+              gegner: spiel.team1 === team ? spiel.team2 : spiel.team1,
+              feld: spiel.feld,
+              torTyp: spiel.torTyp
+            });
+          }
+        });
       });
 
-      block.appendChild(tabelle);
-      einzelplaenePDF.appendChild(block);
+      let block = `<h2>🎫 Spielplan: ${team}</h2>`;
+      block += "<table><tr><th>Runde</th><th>Uhrzeit</th><th>Gegner</th><th>Feld</th></tr>";
+      entries.forEach((e, i) => {
+        block += `<tr style="background-color:${i % 2 === 1 ? "#f9f9f9" : "#ffffff"};">
+          <td>${e.runde}</td>
+          <td>${e.start} – ${e.ende}</td>
+          <td>${e.gegner}</td>
+          <td>Feld ${e.feld} (${e.torTyp})</td>
+        </tr>`;
+      });
+      block += "</table>";
+      allPages += `<div style="page-break-before: always;">${block}</div>`;
     });
   }
 
-  function fuellePDFKopf() {
-    document.getElementById('kopf-turniername').textContent = document.getElementById('turniername').value || '';
-    const datum = document.getElementById('datum').value || '';
-    const ort = document.getElementById('ort').value || '';
-    document.getElementById('kopf-datum-ort').textContent = `${datum} – ${ort}`;
-    document.getElementById('kopf-ansprechpartner').textContent = `Ansprechpartner: ${document.getElementById('ansprechpartner').value || ''}`;
-    document.getElementById('kopf-email').textContent = `E-Mail: ${document.getElementById('email').value || ''}`;
-  }
+  const style = `
+    <style>
+      body { font-family: sans-serif; margin: 0 20px; }
+      table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+      th, td { border: 1px solid #444; padding: 6px; text-align: center; }
+      tr:nth-child(even) td { background-color: #f9f9f9 !important; }
+      tr:nth-child(odd) td { background-color: #ffffff !important; }
+      h2 { text-align: center; margin: 40px 0 10px; }
+      img { max-height: 80px; display: block; margin: 10px auto; }
+      div[style*="page-break-before"] { page-break-before: always; }
+    </style>
+  `;
 
-  erstellenBtn.addEventListener('click', () => {
-    const teams = teamsInput.value.split(',').map(t => t.trim()).filter(t => t);
-    const felder = parseInt(felderInput.value);
-    const spielzeit = parseInt(spielzeitInput.value);
-    const pause = parseInt(pauseInput.value);
-
-    if (teams.length < 2 || isNaN(felder) || isNaN(spielzeit)) {
-      ausgabe.innerHTML = '<p>⚠️ Bitte alle Felder korrekt ausfüllen!</p>';
-      return;
-    }
-
-    const spiele = generiereSpiele(teams);
-    const zeitplan = berechneZeitplan(spiele, felder, spielzeit, pause);
-    zeigeSpielplan(spiele, zeitplan);
-    fuellePDFKopf();
-
-    if (einzelplaeneCheckbox.checked) {
-      zeigeEinzelplaene(teams, zeitplan);
-    } else {
-      einzelplaenePDF.innerHTML = '';
-    }
-
-    pdfBereich.style.display = 'block';
-  });
-
-  pdfBtn.addEventListener('click', () => {
-    window.print();
-  });
-
-  resetBtn.addEventListener('click', () => {
-    document.getElementById('turniername').value = '';
-    document.getElementById('datum').value = '';
-    document.getElementById('ort').value = '';
-    document.getElementById('ansprechpartner').value = '';
-    document.getElementById('email').value = '';
-    teamsInput.value = '';
-    felderInput.value = 3;
-    spielzeitInput.value = 8;
-    pauseInput.value = 2;
-    startzeitInput.value = '10:00';
-    logoInput.value = '';
-    logoVorschau.innerHTML = '';
-    logoPDF.src = '';
-    ausgabe.innerHTML = '';
-    document.getElementById('zeitplan-pdf').innerHTML = '';
-    einzelplaenePDF.innerHTML = '';
-    pdfBereich.style.display = 'none';
-    startzeitHinweis.textContent = '';
-    aktualisiereTorTypen(3);
-    einzelplaeneCheckbox.checked = false;
-  });
-});
+  const popup = window.open('', '', 'width=800,height=600');
+  popup.document.write(`<html><head><title>${turniername || "Turnierplan"}</title>${style}</head><body>${allPages}</body></html>`);
+  popup.document.close();
+  popup.focus();
+  popup.print();
+}
