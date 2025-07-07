@@ -13,7 +13,7 @@ Willkommen beim **Funino Turnierplaner** – einem simplen, flexiblen Tool, um S
 
 ## 📱 Live-Demo
 
-👉 [Jetzt ausprobieren](https://marcolanzwe.github.io/Funino-Manager/)
+👉 [Jetzt ausprobieren](https://Lanzer-Power.github.io/Funino-Manager/)
 
 ## 📦 Dateien
 
@@ -27,12 +27,9 @@ Dieses Repository enthält:
 - `anleitung.html` – Hilfe-Seite  
 - `.nojekyll` – notwendig für GitHub Pages
 
-## 🛠️ Eigene Domain?
-
-Du kannst deine STRATO-Domain z. B. per DNS auf GitHub Pages zeigen lassen – so bleibt die App unter `funino-turnier.de` erreichbar.
 
 ## 💚 Erstellt von
 
-**Marco Lanzwe** – mit ❤️ für den Fußball, die Trainerwelt & alle, die Turniere organisieren!
+**Marco Lanzer** – mit ❤️ für den Fußball, die Trainerwelt & alle, die Turniere organisieren!
 
 ---
