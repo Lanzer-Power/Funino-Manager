@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const felderInput = document.getElementById('felder');
   const spielzeitInput = document.getElementById('spielzeit');
   const pauseInput = document.getElementById('pause');
+  const startzeitInput = document.getElementById('startzeit');
   const logoInput = document.getElementById('logo');
   const logoVorschau = document.getElementById('logo-vorschau');
   const logoPDF = document.getElementById('logo-pdf');
@@ -44,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Bei Änderung der Feldanzahl neu erzeugen
   felderInput.addEventListener('input', () => {
     const felder = parseInt(felderInput.value);
     if (!isNaN(felder) && felder > 0) {
@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initial erzeugen
   aktualisiereTorTypen(parseInt(felderInput.value));
 
   function generiereSpiele(teams) {
@@ -63,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Zufällig mischen
     for (let i = spiele.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [spiele[i], spiele[j]] = [spiele[j], spiele[i]];
@@ -74,8 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function berechneZeitplan(spiele, felder, spielzeit, pause) {
     const zeitplan = [];
+    const [stunden, minuten] = startzeitInput.value.split(':').map(Number);
     let startZeit = new Date();
-    startZeit.setHours(10, 0, 0, 0); // Start um 10:00 Uhr
+    startZeit.setHours(stunden, minuten, 0, 0);
 
     let feldIndex = 0;
     for (let i = 0; i < spiele.length; i++) {
@@ -138,11 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ausgabe.appendChild(tabelle);
 
-    // Startzeit anzeigen
     const startzeitText = zeitplan.length > 0 ? zeitplan[0].beginn : '–';
     startzeitHinweis.textContent = `Spielbeginn: ${startzeitText} Uhr`;
 
-    // PDF-Zeitplan vorbereiten
     document.getElementById('zeitplan-pdf').innerHTML = ausgabe.innerHTML;
   }
 
@@ -187,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     felderInput.value = 3;
     spielzeitInput.value = 8;
     pauseInput.value = 2;
+    startzeitInput.value = '10:00';
     logoInput.value = '';
     logoVorschau.innerHTML = '';
     logoPDF.src = '';
