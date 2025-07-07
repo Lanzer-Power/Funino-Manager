@@ -1,23 +1,19 @@
-/* 🌿 Basislayout */
+/* 🌿 Layout & Zentrierung */
 body {
   font-family: sans-serif;
   background: #f0f8f5;
   padding: 20px;
   color: #222;
   line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-/* Begrenzung & Zentrierung für alle Inhalte */
-form, #spielplan, #statistik, #kopfbereich {
-  width: 100%;
+.container {
   max-width: 900px;
+  margin: 0 auto;
   padding: 0 20px;
-  box-sizing: border-box;
 }
 
+/* Texte & Struktur */
 h1, h2 {
   text-align: center;
   color: #2e7d32;
@@ -68,13 +64,9 @@ button:hover {
   border-collapse: collapse;
   margin: 30px auto 20px;
   width: 100%;
-  max-width: 900px;
 }
 
-#spielplan th,
-#spielplan td,
-#statistik th,
-#statistik td {
+th, td {
   border: 1px solid #ccc;
   padding: 6px 10px;
   text-align: center;
@@ -89,24 +81,27 @@ button:hover {
   background: #ffe082;
 }
 
-/* 🎨 Abwechselnd graue Zeilen im Spielplan */
 #spielplan tr:nth-child(even) td {
   background: #f9f9f9;
 }
 
-/* 🧢 Turnierlogo & Titel */
+/* 📷 Logo */
 #logoVorschau img,
 #kopfbereich img {
   max-height: 80px;
   margin-top: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #kopfbereich h2 {
   margin-bottom: 0;
   color: #1b5e20;
+  text-align: center;
 }
 
-/* 🖨️ Druckversion */
+/* 🖨️ Druck */
 @media print {
   body {
     background: white;
@@ -117,15 +112,6 @@ button:hover {
   button,
   #logoVorschau {
     display: none !important;
-  }
-
-  #kopfbereich {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  #kopfbereich img {
-    max-height: 80px;
   }
 
   table {
@@ -153,8 +139,7 @@ button:hover {
   }
 }
 
-/* 🖼️ Horizontale Trennlinie */
 hr {
-  max-width: 900px;
+  max-width: 100%;
   margin: 40px auto;
 }
