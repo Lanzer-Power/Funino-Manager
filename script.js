@@ -12,10 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const ausgabe = document.getElementById('spielplan');
   const pdfBereich = document.getElementById('pdf-bereich');
   const torListe = document.getElementById('tor-liste');
+  const startzeitHinweis = document.getElementById('startzeit-hinweis');
 
   const torTypen = ['Minitore', 'Jugendtore'];
 
-  // Logo-Vorschau anzeigen
+  // Logo-Vorschau
   logoInput.addEventListener('change', () => {
     const file = logoInput.files[0];
     if (file) {
@@ -136,6 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     ausgabe.appendChild(tabelle);
+
+    // Startzeit anzeigen
+    const startzeitText = zeitplan.length > 0 ? zeitplan[0].beginn : '–';
+    startzeitHinweis.textContent = `Spielbeginn: ${startzeitText} Uhr`;
+
+    // PDF-Zeitplan vorbereiten
     document.getElementById('zeitplan-pdf').innerHTML = ausgabe.innerHTML;
   }
 
@@ -186,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ausgabe.innerHTML = '';
     document.getElementById('zeitplan-pdf').innerHTML = '';
     pdfBereich.style.display = 'none';
+    startzeitHinweis.textContent = '';
     aktualisiereTorTypen(3);
   });
-
 });
