@@ -1,121 +1,143 @@
+/* 🌿 Basislayout */
 body {
   font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f5f5f5;
+  background: #f0f8f5;
+  padding: 20px;
   color: #222;
+  line-height: 1.5;
 }
 
-header {
-  background: #2e7d32;
-  color: white;
-  padding: 1rem;
-  text-align: left;
+h1, h2 {
+  text-align: center;
+  color: #2e7d32;
+  margin-top: 20px;
 }
 
-main {
-  padding: 1rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-section {
-  margin-bottom: 2rem;
-}
-
-h1, h2, h3 {
-  margin-top: 0;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="number"],
-input[type="time"],
+label,
+input,
+select,
 textarea,
-select {
+button {
+  display: block;
   width: 100%;
-  padding: 0.5rem;
-  margin: 0.3rem 0 1rem 0;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  max-width: 600px;
+  margin-top: 10px;
+  font-size: 14px;
 }
 
 textarea {
   resize: vertical;
-  min-height: 60px;
 }
 
-label {
-  font-weight: bold;
-  display: block;
-  margin-top: 0.5rem;
+input[type="checkbox"] {
+  width: auto;
+  display: inline-block;
+  margin-right: 8px;
 }
 
 button {
-  background: #2e7d32;
+  margin-top: 20px;
+  padding: 10px;
+  font-weight: bold;
+  background: #4caf50;
   color: white;
   border: none;
-  padding: 0.6rem 1.2rem;
-  margin-right: 1rem;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 1rem;
+  border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
 button:hover {
-  background: #1b5e20;
+  background: #388e3c;
 }
 
-#logo-vorschau img {
-  margin-top: 0.5rem;
-  max-height: 80px;
-}
-
-table {
-  width: 100%;
+/* 📋 Tabellen */
+#spielplan table,
+#statistik table {
   border-collapse: collapse;
-  margin-top: 1rem;
+  margin: 30px auto 20px;
+  width: 100%;
+  max-width: 900px;
 }
 
-th, td {
+#spielplan th,
+#spielplan td,
+#statistik th,
+#statistik td {
   border: 1px solid #ccc;
-  padding: 0.5rem;
-  text-align: left;
-}
-
-th {
-  background: #e0e0e0;
-}
-
-footer {
+  padding: 6px 10px;
   text-align: center;
-  padding: 1rem;
-  background: #eee;
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
-footer a {
-  color: #2e7d32;
-  text-decoration: none;
-  margin-left: 1rem;
+#spielplan th {
+  background: #c8e6c9;
 }
 
+#statistik th {
+  background: #ffe082;
+}
+
+/* 🎨 Abwechselnd graue Zeilen im Spielplan */
+#spielplan tr:nth-child(even) td {
+  background: #f9f9f9;
+}
+
+/* 🧢 Turnierlogo & Titel */
+#logoVorschau img,
+#kopfbereich img {
+  max-height: 80px;
+  margin-top: 10px;
+}
+
+#kopfbereich h2 {
+  margin-bottom: 0;
+  color: #1b5e20;
+}
+
+/* 🖨️ Druckversion */
 @media print {
   body {
     background: white;
     color: black;
   }
 
-  header, #einstellungen, #aktionen, #ausgabe, footer {
-    display: none;
+  form,
+  button,
+  #logoVorschau {
+    display: none !important;
   }
 
-  #pdf-bereich {
-    display: block !important;
+  #kopfbereich {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  #kopfbereich img {
+    max-height: 80px;
   }
 
   table {
-    page-break-inside: avoid;
+    width: 100%;
+    font-size: 12pt;
+    border: 1px solid #000;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 6px;
+  }
+
+  h1, h2 {
+    color: black;
+    text-align: center;
+  }
+
+  hr {
+    page-break-after: always;
+  }
+
+  div[style*="page-break-before"] {
+    page-break-before: always;
   }
 }
