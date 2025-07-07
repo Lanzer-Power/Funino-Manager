@@ -7,80 +7,83 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Funino Spielfest Planer</h1>
-  <h2>⚽ Turnierübersicht ⚽</h2>
+  <div class="container">
+    <h1>Funino Spielfest Planer</h1>
+    <h2>⚽ Turnierübersicht ⚽</h2>
 
-  <label>🏷️ Turniername:
-    <input type="text" id="turniername" placeholder="z. B. U9 Mini-Cup 2025" />
-  </label>
-
-  <label>📷 Vereinslogo (optional):
-    <input type="file" id="logoUpload" accept="image/*" />
-  </label>
-
-  <div id="logoVorschau" style="margin-top:10px;"></div>
-  <hr />
-
-  <form id="spielformular">
-    <label>📅 Datum:
-      <input type="date" id="datum" required />
+    <label>🏷️ Turniername:
+      <input type="text" id="turniername" placeholder="z. B. U9 Mini-Cup 2025" />
     </label>
 
-    <label>⏰ Startzeit:
-      <input type="time" id="startzeit" required />
+    <label>📷 Vereinslogo (optional):
+      <input type="file" id="logoUpload" accept="image/*" />
     </label>
 
-    <label>⏱️ Spieldauer (Minuten):
-      <input type="number" id="dauer" value="8" min="1" required />
-    </label>
+    <div id="logoVorschau" style="margin-top:10px;"></div>
 
-    <label>☕ Pausenlänge (Minuten):
-      <input type="number" id="pause" value="2" min="0" required />
-    </label>
+    <hr />
 
-    <label>🔁 Spielrunden:
-      <select id="runden">
-        <option value="auto">Automatisch (jeder gegen jeden)</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
-        <option value="13">13</option>
-        <option value="14">14</option>
-        <option value="15">15</option>
-      </select>
-    </label>
+    <form id="spielformular">
+      <label>📅 Datum:
+        <input type="date" id="datum" required />
+      </label>
 
-    <label>🏟️ Anzahl Spielfelder (max. 8):
-      <input type="number" id="felder" value="3" min="1" max="8" required />
-    </label>
+      <label>⏰ Startzeit:
+        <input type="time" id="startzeit" required />
+      </label>
 
-    <div id="torTypen"></div>
+      <label>⏱️ Spieldauer (Minuten):
+        <input type="number" id="dauer" value="8" min="1" required />
+      </label>
 
-    <label>👥 Teams (z. B. SC Köln 2000-2, Fc Köln-1):
-      <textarea id="teams" rows="3" required>SC Köln 2000-2, Fortuna-1, Fc Köln-1</textarea>
-    </label>
+      <label>☕ Pausenlänge (Minuten):
+        <input type="number" id="pause" value="2" min="0" required />
+      </label>
 
-    <label>
-      <input type="checkbox" id="einzelplaene" />
-      🧾 Für jedes Team einen Einzel-Spielplan erzeugen
-    </label>
+      <label>🔁 Spielrunden:
+        <select id="runden">
+          <option value="auto">Automatisch (jeder gegen jeden)</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+        </select>
+      </label>
 
-    <button type="submit">📋 Spielplan erstellen</button>
-    <button type="button" onclick="exportPDF()">📄 Als PDF speichern</button>
-  </form>
+      <label>🏟️ Anzahl Spielfelder (max. 8):
+        <input type="number" id="felder" value="3" min="1" max="8" required />
+      </label>
 
-  <hr />
+      <div id="torTypen"></div>
 
-  <div id="kopfbereich" style="text-align:center; margin-bottom:20px;"></div>
-  <div id="spielplan"></div>
-  <div id="statistik"></div>
+      <label>👥 Teams (z. B. SC Köln 2000-2, Fc Köln-1):
+        <textarea id="teams" rows="3" required>SC Köln 2000-2, Fortuna-1, Fc Köln-1</textarea>
+      </label>
+
+      <label>
+        <input type="checkbox" id="einzelplaene" />
+        🧾 Für jedes Team einen Einzel-Spielplan erzeugen
+      </label>
+
+      <button type="submit">📋 Spielplan erstellen</button>
+      <button type="button" onclick="exportPDF()">📄 Als PDF speichern</button>
+    </form>
+
+    <hr />
+
+    <div id="kopfbereich"></div>
+    <div id="spielplan"></div>
+    <div id="statistik"></div>
+  </div>
 
   <script src="script.js"></script>
 </body>
