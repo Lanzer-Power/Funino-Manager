@@ -20,6 +20,10 @@
       <h2>📋 Turnierinformationen</h2>
       <input type="text" id="turniername" placeholder="Turniername" />
       <input type="text" id="datum" placeholder="Datum (z. B. 07.07.2025)" />
+
+      <label for="startzeit">Spielbeginn (HH:MM):</label>
+      <input type="time" id="startzeit" value="10:00" />
+
       <input type="text" id="ort" placeholder="Ort" />
       <input type="text" id="ansprechpartner" placeholder="Ansprechpartner" />
       <input type="email" id="email" placeholder="E-Mail-Adresse" />
@@ -41,9 +45,6 @@
 
       <label for="pause">Pausenzeit zwischen Spielen (Minuten):</label>
       <input type="number" id="pause" min="0" value="2" />
-
-      <label for="startzeit">Spielbeginn (HH:MM):</label>
-      <input type="time" id="startzeit" value="10:00" />
 
       <div id="tor-auswahl">
         <h3>🥅 Tor-Typ pro Feld wählen</h3>
